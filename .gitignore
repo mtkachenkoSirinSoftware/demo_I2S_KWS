@@ -1,0 +1,15 @@
+# NSX materialises these on lock / configure
+build/
+build-host/
+kws_core/build/
+cmake/nsx/
+boards
+modules
+.nsx
+# embed_model.py sidecar (absolute host paths)
+model/generated/kws_model_manifest.json
+# recordings
+capture/
+__pycache__/
+# local Python environment for nsx
+.venv/

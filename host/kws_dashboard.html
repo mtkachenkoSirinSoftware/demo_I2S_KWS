@@ -1,0 +1,653 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Served by host/kws_dashboard.py; data arrives on /events (SSE) from the firmware's SWO. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KWS I2S Live</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:      #f9f9f7;
+    --surface:   #fcfcfb;
+    --surface-2: #f2f2ef;
+    --ink:       #0b0b0b;
+    --ink-2:     #52514e;
+    --ink-muted: #898781;
+    --gridline:  #e1e0d9;
+    --baseline:  #c3c2b7;
+    --border:    rgba(11,11,11,0.10);
+    --border-2:  rgba(11,11,11,0.16);
+    --accent:    #2a78d6;
+    --accent-2:  #eb6834;
+    --accent-3:  #1baf7a;
+    --accent-4:  #eda100;
+    --seq-100:   #cde2fb;
+    --good:      #0a8a0a;
+    --good-bg:   rgba(12,163,12,0.12);
+    --warn:      #9a6800;
+    --warn-bg:   rgba(237,161,0,0.16);
+    --bad:       #c4321c;
+    --bad-bg:    rgba(196,50,28,0.11);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page:      #0d0d0d;
+      --surface:   #1a1a19;
+      --surface-2: #212120;
+      --ink:       #ffffff;
+      --ink-2:     #c3c2b7;
+      --ink-muted: #898781;
+      --gridline:  #2c2c2a;
+      --baseline:  #383835;
+      --border:    rgba(255,255,255,0.10);
+      --border-2:  rgba(255,255,255,0.16);
+      --accent:    #3987e5;
+      --accent-2:  #d95926;
+      --accent-3:  #199e70;
+      --accent-4:  #c98500;
+      --seq-100:   #184f95;
+      --good:      #2fc02f;
+      --good-bg:   rgba(12,163,12,0.20);
+      --warn:      #e5a51a;
+      --warn-bg:   rgba(237,161,0,0.18);
+      --bad:       #f0664f;
+      --bad-bg:    rgba(240,102,79,0.16);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink-2);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14.5px; line-height: 1.55; padding: 32px 16px 72px;
+  }
+  .col { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+  .mono { font-family: ui-monospace, "SFMono-Regular", "Cascadia Code", "Roboto Mono", Consolas, monospace; }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  .header {
+    background: var(--surface);
+    background-image: repeating-linear-gradient(90deg, var(--gridline) 0 1px, transparent 1px 48px);
+    border: 1px solid var(--border); border-radius: 10px; padding: 24px 24px 20px;
+  }
+  .eyebrow { font: 600 11px/1 ui-monospace, "SFMono-Regular", monospace; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted); margin: 0 0 10px; }
+  h1 { font-size: 26px; line-height: 1.15; font-weight: 700; color: var(--ink); margin: 0 0 6px; letter-spacing: -0.01em; text-wrap: balance; }
+  .header-sub { font-size: 14px; margin: 0 0 16px; }
+  .chiprow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border-2); border-radius: 6px; padding: 5px 10px; font: 500 12px/1 system-ui, sans-serif; color: var(--ink-2); background: var(--surface-2); }
+  .chip b { color: var(--ink); font-weight: 600; }
+  .badge { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 5px 12px 5px 10px; font: 600 12px/1 system-ui, sans-serif; background: var(--surface-2); color: var(--ink-muted); }
+  .badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .badge.good { background: var(--good-bg); color: var(--good); }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+  .badge.bad  { background: var(--bad-bg);  color: var(--bad); }
+
+  .verdict { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 26px 24px 22px; text-align: center; transition: background .15s ease, border-color .15s ease; }
+  .verdict-kicker { font: 600 11px/1.3 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin: 0 0 8px; }
+  .verdict-main { font-size: clamp(30px, 7vw, 54px); line-height: 1.05; font-weight: 750; color: var(--ink); margin: 0; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+  .verdict-sub { font-size: 14px; color: var(--ink-2); margin: 10px 0 0; min-height: 1.5em; overflow-wrap: anywhere; }
+  .verdict.good { background: var(--good-bg); border-color: var(--good); }
+  .verdict.good .verdict-main { color: var(--good); }
+  .verdict.warn { background: var(--warn-bg); border-color: var(--warn); }
+  .verdict.warn .verdict-main { color: var(--warn); }
+  .verdict.bad  { background: var(--bad-bg);  border-color: var(--bad); }
+  .verdict.bad .verdict-main { color: var(--bad); }
+  .verdict.listen { border-color: var(--accent); }
+  .countdown { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin: 16px auto 0; max-width: 420px; visibility: hidden; }
+  .countdown.on { visibility: visible; }
+  .countdown > div { height: 100%; width: 100%; background: var(--accent); transform-origin: left; }
+
+  .section-title { font-size: 18px; font-weight: 700; color: var(--ink); margin: 0; }
+  .section-desc { font-size: 13.5px; color: var(--ink-muted); margin: 2px 0 0; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px 18px; }
+  .chart-title { font-size: 14px; font-weight: 650; color: var(--ink); margin: 0; }
+  .chart-sub { font-size: 12.5px; color: var(--ink-muted); margin: 0 0 14px; }
+
+  .words { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+  .word { font: 600 13px/1 ui-monospace, monospace; padding: 9px 13px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-2); background: var(--surface-2); color: var(--ink-2); }
+  .word:hover { border-color: var(--accent); }
+  .word[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .word:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .trial-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .btn { font: 650 14px/1 system-ui, sans-serif; padding: 11px 18px; border-radius: 7px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: #fff; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--border-2); font-weight: 550; }
+  .hint { font-size: 12.5px; color: var(--ink-muted); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .stat-tile { background: var(--surface); padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 5px; }
+  .stat-label { font: 600 11px/1.3 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); }
+  .stat-value { font: 700 23px/1.1 system-ui, sans-serif; color: var(--ink); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .stat-value small { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .stat-note { font-size: 12px; color: var(--ink-muted); }
+
+  .timeline { position: relative; height: 130px; display: flex; align-items: flex-end; gap: 1px; border-bottom: 1px solid var(--baseline); }
+  .timeline.short { height: 70px; gap: 2px; }
+  .tl-bar { flex: 1 1 0; min-width: 1px; max-width: 18px; border-radius: 2px 2px 0 0; background: var(--seq-100); }
+  .tl-bar.hot { background: var(--accent); }
+  .tl-bar.fired { background: var(--good); }
+  .tl-bar:hover, .tl-bar:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; }
+  .threshold { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--ink-muted); pointer-events: none; }
+  .threshold span { position: absolute; right: 0; top: -18px; font: 600 11px/1 ui-monospace, monospace; color: var(--ink-muted); background: var(--surface); padding: 2px 4px; }
+  .empty { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; color: var(--ink-muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2.5px; flex: none; }
+
+  .bars { display: flex; flex-direction: column; gap: 4px; }
+  .bar-row { display: grid; grid-template-columns: 190px 1fr 150px; align-items: center; gap: 10px; padding: 3px 0; }
+  .bar-label { font: 500 12.5px/1.3 system-ui, sans-serif; color: var(--ink-2); }
+  .bar-track { position: relative; height: 16px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .bar-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 4px 2px 2px 4px; min-width: 2px; }
+  .bar-value { font: 600 12px/1 ui-monospace, monospace; color: var(--ink-2); text-align: right; }
+
+  .insight { border-left: 3px solid var(--ink-muted); background: rgba(137,135,129,0.08); border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; margin-top: 14px; }
+  .insight.bad { border-left-color: var(--bad); background: var(--bad-bg); color: var(--ink); }
+  .insight.warn { border-left-color: var(--warn); background: var(--warn-bg); color: var(--ink); }
+  .insight[hidden] { display: none; }
+
+  .table-wrap { overflow-x: auto; }
+  table.data { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 460px; }
+  table.data th { text-align: left; font: 600 10.5px/1.3 system-ui, sans-serif; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); padding: 6px 10px; border-bottom: 1px solid var(--baseline); white-space: nowrap; }
+  table.data td { font: 500 12.5px/1.3 ui-monospace, monospace; color: var(--ink-2); padding: 7px 10px; border-bottom: 1px solid var(--gridline); font-variant-numeric: tabular-nums; }
+  table.data td.label { color: var(--ink); font-weight: 650; }
+  .tag { display: inline-block; border-radius: 4px; padding: 2px 7px; font: 650 11px/1.4 system-ui, sans-serif; }
+  .tag.good { background: var(--good-bg); color: var(--good); }
+  .tag.warn { background: var(--warn-bg); color: var(--warn); }
+  .tag.bad  { background: var(--bad-bg);  color: var(--bad); }
+  .tag.none { background: var(--surface-2); color: var(--ink-muted); }
+  details.appendix { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px 22px; }
+  details.appendix summary { cursor: pointer; padding: 14px 0; font-size: 14px; font-weight: 650; color: var(--ink); }
+  pre.raw { margin: 0 0 18px; max-height: 320px; overflow: auto; font: 500 12px/1.5 ui-monospace, monospace; color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .footer-note { font-size: 12.5px; color: var(--ink-muted); }
+
+  #tooltip { position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--page); font: 500 12px/1.4 ui-monospace, monospace; padding: 6px 9px; border-radius: 6px; opacity: 0; transition: opacity .1s ease; }
+  #tooltip.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 620px) { .bar-row { grid-template-columns: 120px 1fr 110px; } }
+</style>
+</head>
+<body>
+<div class="col">
+
+  <header class="header">
+    <p class="eyebrow">kws_i2s · live I2S microphone</p>
+    <h1>Always-on keyword spotting on Apollo510</h1>
+    <p class="header-sub">SWO lines of the <span class="mono">kws_i2s</span> firmware, parsed live.</p>
+    <div class="chiprow">
+      <span class="badge" id="conn">connecting…</span>
+      <span class="chip">Model <b class="mono" id="b-sha">—</b></span>
+      <span class="chip">Runtime <b id="b-runtime">—</b></span>
+      <span class="chip">I2S <b id="b-i2s">—</b></span>
+      <span class="chip">CPU <b id="b-cpu">—</b></span>
+      <span class="chip">GPIO clk / ws / sdin <b id="b-gpio">—</b></span>
+      <span class="chip">Slot <b id="b-slot">—</b></span>
+    </div>
+  </header>
+
+  <section class="verdict" id="verdict" aria-live="polite">
+    <p class="verdict-kicker" id="v-kicker">Status</p>
+    <p class="verdict-main" id="v-main">Waiting for the board</p>
+    <p class="verdict-sub" id="v-sub">&nbsp;</p>
+    <div class="countdown" id="countdown"><div id="countdown-fill"></div></div>
+  </section>
+
+  <section class="card">
+    <p class="chart-title">Word check</p>
+    <p class="chart-sub">Pick a word, press “Start attempt”, and say it into the microphone while the bar runs.</p>
+    <div class="words" id="words" role="group" aria-label="Target word"></div>
+    <div class="trial-row">
+      <button class="btn" id="btn-trial">Start attempt</button>
+      <button class="btn ghost" id="btn-clear">Reset tally</button>
+      <span class="hint">Space starts an attempt. Attempt window: <span id="win-s"></span> s.</span>
+    </div>
+  </section>
+
+  <section class="stat-grid">
+    <div class="stat-tile"><span class="stat-label">Attempts</span><span class="stat-value tnum" id="t-total">0</span><span class="stat-note">this session</span></div>
+    <div class="stat-tile"><span class="stat-label">Recognized</span><span class="stat-value tnum" id="t-hit">0</span><span class="stat-note" id="t-rate">—</span></div>
+    <div class="stat-tile"><span class="stat-label">Wrong word</span><span class="stat-value tnum" id="t-wrong">0</span><span class="stat-note">fired on another keyword</span></div>
+    <div class="stat-tile"><span class="stat-label">Missed</span><span class="stat-value tnum" id="t-miss">0</span><span class="stat-note">no event in the window</span></div>
+    <div class="stat-tile"><span class="stat-label">Events total</span><span class="stat-value tnum" id="t-events">0</span><span class="stat-note">including outside attempts</span></div>
+  </section>
+
+  <div>
+    <h2 class="section-title">What the model hears</h2>
+    <p class="section-desc">One inference every <span id="stride-ms">100</span> ms over the last second of audio; an event is the recognizer's decision.</p>
+  </div>
+
+  <section class="stat-grid">
+    <div class="stat-tile"><span class="stat-label">Last argmax</span><span class="stat-value mono" id="s-pred">—</span><span class="stat-note" id="s-pred-age">no data</span></div>
+    <div class="stat-tile"><span class="stat-label">Score</span><span class="stat-value tnum" id="s-score">—</span><span class="stat-note">event threshold <span id="thr-text"></span></span></div>
+    <div class="stat-tile"><span class="stat-label">Invoke</span><span class="stat-value tnum" id="s-us">—</span><span class="stat-note" id="s-cycles">DWT, this firmware</span></div>
+    <div class="stat-tile"><span class="stat-label">Mic peak</span><span class="stat-value tnum" id="s-peak">—</span><span class="stat-note" id="s-dc">last 20 ms, int16</span></div>
+    <div class="stat-tile"><span class="stat-label">Audio errors</span><span class="stat-value tnum" id="s-err">—</span><span class="stat-note">overruns / DMA faults</span></div>
+  </section>
+
+  <section class="card">
+    <p class="chart-title">Winning-class score per inference</p>
+    <p class="chart-sub" id="tl-sub">Newest on the right. Hover a bar for the word and score.</p>
+    <div class="timeline" id="tl-score"><div class="threshold" id="thr-line"><span id="thr-label"></span></div><div class="empty">no inference lines yet</div></div>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--good)"></span>recognizer fired</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--accent)"></span>keyword above threshold</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--seq-100)"></span>below threshold, silence or unknown</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <p class="chart-title">Microphone level</p>
+    <p class="chart-sub"><span class="mono">peak=</span> from the <span class="mono">Frame</span> line: peak of the last 20 ms hop after the high-pass, not a KWS score. Scaled to the maximum in view.</p>
+    <div class="timeline short" id="tl-peak"><div class="empty">no Frame lines yet</div></div>
+    <div class="insight warn" id="mic-settle" hidden>
+      <b>Microphone settling:</b> the firmware mutes the first seconds after reset while the microphone's start-up offset decays.
+    </div>
+    <div class="insight bad" id="mic-warn" hidden>
+      <b>No live signal:</b> <span class="mono">peak=</span> is zero, or does not change together with <span class="mono">dc=</span>, for several seconds. Check SCK → GPIO 47, WS → GPIO 48, SD → GPIO 4, the 1.8 V supply and L/R → GND.
+    </div>
+    <div class="insight warn" id="slot-warn" hidden>
+      <b>Slot moved:</b> the microphone sample changed its position in the stereo pair <span id="slot-count"></span> time(s) since reset. The firmware follows it, but a hop at each change may be corrupted.
+    </div>
+  </section>
+
+  <div>
+    <h2 class="section-title">Always-on budget</h2>
+    <p class="section-desc">Cycle counts printed by this firmware (DWT). They are not a power or energy measurement.</p>
+  </div>
+
+  <section class="stat-grid">
+    <div class="stat-tile"><span class="stat-label">Core awake</span><span class="stat-value tnum" id="a-awake">—</span><span class="stat-note" id="a-sleep">share of the last second</span></div>
+    <div class="stat-tile"><span class="stat-label">Per hop (20 ms)</span><span class="stat-value tnum" id="a-hop">—</span><span class="stat-note">window + FFT + mel</span></div>
+    <div class="stat-tile"><span class="stat-label">Per inference</span><span class="stat-value tnum" id="a-inf">—</span><span class="stat-note">log + DCT, quantize, Invoke</span></div>
+    <div class="stat-tile"><span class="stat-label">Sum of stages</span><span class="stat-value tnum" id="a-sum">—</span><span class="stat-note">per second, from stage counts</span></div>
+  </section>
+
+  <section class="card">
+    <p class="chart-title">Where the awake time goes</p>
+    <p class="chart-sub">Cycles per second by stage: the per-hop stage × hops per second, the per-inference stages × inferences per second.</p>
+    <div class="bars" id="stage-bars"><div class="hint">no stage lines yet</div></div>
+  </section>
+
+  <section class="card">
+    <p class="chart-title">Log</p>
+    <p class="chart-sub">Recognizer events and attempt outcomes, newest first.</p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Time</th><th>What</th><th>Word</th><th>Score</th><th>Outcome</th></tr></thead>
+        <tbody id="log"><tr><td colspan="5">nothing yet</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <details class="appendix">
+    <summary>Raw SWO lines</summary>
+    <pre class="raw" id="raw"></pre>
+  </details>
+
+  <p class="footer-note">
+    The attempt tally is a bench check of a live microphone, not accuracy on a dataset split.
+    <span class="mono">invoke_us</span>, stage cycles and the awake share are DWT counts printed by this firmware on the EVB; the page only displays them.
+  </p>
+</div>
+<div id="tooltip" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Mirrors kws_core: kLabels (model_runner.cc), KWS_DETECTION_THRESHOLD and
+  // the frame / stride geometry (kws_config.h).
+  var KEYWORDS = ["yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"];
+  var THRESHOLD = 0.70;
+  var HOPS_PER_SECOND = 50;
+  var TRIAL_MS = 4000;
+  var FLASH_MS = 2500;
+  var STALE_MS = 3500;
+  var SILENT_FRAMES = 3;
+  var FROZEN_FRAMES = 5;
+  var MAX_INF = 200;
+  var MAX_SECONDS = 60;
+  var MAX_LOG = 80;
+  var MAX_RAW = 300;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var s = {
+    target: "yes", status: "starting", detail: "", lastDataAt: 0,
+    inf: [], live: [], peaks: [], silentRun: 0, frozenRun: 0,
+    lastLive: null, lastFrame: null, lastInf: null, stage: null,
+    cpuHz: 0, strideMs: 100, sleep: null,
+    trial: null, lastOutcome: null, flash: null,
+    tally: { total: 0, hit: 0, wrong: 0, miss: 0, events: 0 },
+    log: [], raw: []
+  };
+
+  function clock(t) { return new Date(t).toLocaleTimeString("en-GB"); }
+  function isKeyword(label) { return KEYWORDS.indexOf(label) >= 0; }
+  function setText(id, value) { $(id).textContent = value; }
+  function num(n) { return Number(n).toLocaleString("en-US"); }
+  function setValueUnit(id, value, unit) {
+    var el = $(id); el.textContent = value;
+    var sm = document.createElement("small"); sm.textContent = " " + unit; el.appendChild(sm);
+  }
+
+  // ---------- target words ----------
+  KEYWORDS.forEach(function (w) {
+    var b = document.createElement("button");
+    b.className = "word"; b.type = "button"; b.textContent = w;
+    b.addEventListener("click", function () { if (!s.trial) { s.target = w; renderWords(); render(); } });
+    $("words").appendChild(b);
+  });
+  function renderWords() {
+    Array.prototype.forEach.call($("words").children, function (b) {
+      b.setAttribute("aria-pressed", String(b.textContent === s.target));
+      b.disabled = !!s.trial;
+    });
+  }
+
+  // ---------- attempts ----------
+  function startTrial() {
+    if (s.trial) return;
+    s.trial = { target: s.target, start: Date.now() };
+    s.flash = null; s.lastOutcome = null;
+    var fill = $("countdown-fill");
+    fill.style.transition = "none"; fill.style.transform = "scaleX(1)";
+    void fill.offsetWidth;
+    fill.style.transition = "transform " + TRIAL_MS + "ms linear"; fill.style.transform = "scaleX(0)";
+    s.trial.timer = setTimeout(function () { endTrial("miss", null); }, TRIAL_MS);
+    renderWords(); render();
+  }
+  function endTrial(outcome, ev) {
+    var trial = s.trial;
+    if (!trial) return;
+    clearTimeout(trial.timer);
+    s.trial = null;
+    s.tally.total += 1; s.tally[outcome] += 1;
+    s.lastOutcome = { outcome: outcome, target: trial.target, label: ev ? ev.label : null,
+                      score: ev ? ev.score : null, at: Date.now() };
+    addLog({ t: Date.now(), kind: "attempt “" + trial.target + "”", attempt: true,
+             label: ev ? ev.label : "—", score: ev ? ev.score : null, outcome: outcome });
+    renderWords(); render();
+  }
+  $("btn-trial").addEventListener("click", startTrial);
+  $("btn-clear").addEventListener("click", function () {
+    s.tally = { total: 0, hit: 0, wrong: 0, miss: 0, events: s.tally.events };
+    s.lastOutcome = null; render();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.code === "Space" && !/^(BUTTON|INPUT|SUMMARY)$/.test(e.target.tagName)) { e.preventDefault(); startTrial(); }
+  });
+
+  // ---------- incoming messages ----------
+  function onMessage(m) {
+    var fresh = !m.t || (Date.now() - m.t * 1000) < FLASH_MS;
+    if (m.type === "status") { s.status = m.state; s.detail = m.detail || ""; return; }
+    if (m.type === "banner") { applyBanner(m); return; }
+    if (m.type === "raw") {
+      s.raw.push(m.line); if (s.raw.length > MAX_RAW) s.raw.shift();
+      if (fresh) s.lastDataAt = Date.now();
+      return;
+    }
+    if (m.type === "inf") {
+      s.lastInf = m; s.inf.push(m); if (s.inf.length > MAX_INF) s.inf.shift();
+    } else if (m.type === "live") {
+      s.lastLive = m; s.live.push(m); if (s.live.length > MAX_SECONDS) s.live.shift();
+    } else if (m.type === "stage") {
+      s.stage = m;
+    } else if (m.type === "frame") {
+      // A live MEMS never repeats peak and dc exactly; a stuck data line does.
+      var moving = Number(m.muted) !== 1;
+      s.frozenRun = moving && s.lastFrame && s.lastFrame.peak === m.peak && s.lastFrame.dc === m.dc ? s.frozenRun + 1 : 0;
+      s.silentRun = moving && Number(m.peak) === 0 ? s.silentRun + 1 : 0;
+      s.lastFrame = m; s.peaks.push(m); if (s.peaks.length > MAX_SECONDS) s.peaks.shift();
+    } else if (m.type === "event") {
+      s.tally.events += 1;
+      if (s.inf.length) s.inf[s.inf.length - 1].fired = true;
+      if (s.trial && fresh) {
+        endTrial(m.label === s.trial.target ? "hit" : "wrong", m);
+      } else {
+        addLog({ t: m.t * 1000, kind: "event", label: m.label, score: m.score,
+                 outcome: m.label === s.target ? "match" : "other" });
+        if (fresh) s.flash = { label: m.label, score: m.score, at: Date.now() };
+      }
+    } else if (m.type === "error") {
+      addLog({ t: (m.t || Date.now() / 1000) * 1000, kind: "firmware error", label: m.message, score: null, outcome: "bad" });
+    }
+  }
+  function applyBanner(m) {
+    if (m.sha256) setText("b-sha", String(m.sha256).slice(0, 12));
+    if (m.runtime) setText("b-runtime", m.runtime);
+    if (m.bclk) setText("b-i2s", (m.fs / 1000) + " kHz · " + m.slots + " · " + m.bits + "-bit · HPF " + m.hpf + " Hz");
+    else if (m.backend) setText("b-i2s", m.backend + (m.fs ? " · " + m.fs + " Hz" : ""));
+    if (m.cpu_hz) { s.cpuHz = Number(m.cpu_hz); setText("b-cpu", (m.cpu_hz / 1e6) + " MHz" + (m.perf_mode ? " (" + m.perf_mode + ")" : "")); }
+    if (typeof m.clk === "number" && m.ws !== undefined) setText("b-gpio", m.clk + " / " + m.ws + " / " + m.sdin);
+    if (m.stride_ms) { s.strideMs = Number(m.stride_ms); setText("stride-ms", m.stride_ms); }
+    if (m.sleep !== undefined) s.sleep = Number(m.sleep);
+  }
+  function addLog(row) { s.log.unshift(row); if (s.log.length > MAX_LOG) s.log.pop(); }
+
+  // ---------- rendering ----------
+  var OUTCOME = {
+    hit:   ["good", "recognized"],
+    wrong: ["warn", "wrong word"],
+    miss:  ["bad",  "missed"],
+    match: ["good", "matches target"],
+    other: ["none", "not the target"],
+    bad:   ["bad",  "error"]
+  };
+
+  function renderVerdict(now) {
+    var v = $("verdict"), cls = "", kicker = "Status", main, sub = " ";
+    var stale = !s.lastDataAt || now - s.lastDataAt > STALE_MS;
+    var live = s.status === "attached" || s.status === "replay";
+    var muted = s.lastFrame && Number(s.lastFrame.muted) === 1;
+    if (s.trial) {
+      cls = "listen"; kicker = "Attempt running";
+      main = "Say: " + s.trial.target;
+      sub = "Waiting for the recognizer's event line";
+    } else if (s.lastOutcome && now - s.lastOutcome.at < 6000) {
+      var o = s.lastOutcome; kicker = "Attempt result";
+      if (o.outcome === "hit") { cls = "good"; main = "Recognized: " + o.label; sub = "score " + Number(o.score).toFixed(3); }
+      else if (o.outcome === "wrong") { cls = "warn"; main = "Fired on “" + o.label + "”"; sub = "expected “" + o.target + "”, score " + Number(o.score).toFixed(3); }
+      else { cls = "bad"; main = "Not recognized"; sub = "no event for “" + o.target + "” within " + TRIAL_MS / 1000 + " s"; }
+    } else if (s.flash && now - s.flash.at < FLASH_MS) {
+      var match = s.flash.label === s.target;
+      cls = match ? "good" : "warn"; kicker = "Recognizer event";
+      main = "Recognized: " + s.flash.label;
+      sub = "score " + Number(s.flash.score).toFixed(3) + (match ? "" : " · current target is “" + s.target + "”");
+    } else if (s.status === "error") {
+      cls = "bad"; main = "No link to the board"; sub = s.detail;
+    } else if (s.status === "replay-done") {
+      main = "Replay finished"; sub = s.detail;
+    } else if (stale) {
+      cls = live && s.lastDataAt ? "warn" : ""; main = "Waiting for the board";
+      sub = s.lastDataAt ? "no SWO lines for " + Math.round((now - s.lastDataAt) / 1000) + " s" : "SWO is silent — is the board flashed and running?";
+    } else if (muted) {
+      main = "Microphone settling"; sub = "audio is muted for the first seconds after reset";
+    } else if (s.silentRun >= SILENT_FRAMES) {
+      cls = "bad"; main = "No live signal"; sub = "peak=0 for " + s.silentRun + " s — the model hears silence";
+    } else if (s.frozenRun >= FROZEN_FRAMES) {
+      cls = "bad"; main = "No live signal"; sub = "peak and dc unchanged for " + s.frozenRun + " s — this is not live audio";
+    } else {
+      main = "Listening"; sub = "target: “" + s.target + "” · press “Start attempt” or just say the word";
+    }
+    v.className = "verdict" + (cls ? " " + cls : "");
+    setText("v-kicker", kicker); setText("v-main", main); setText("v-sub", sub);
+    $("countdown").className = "countdown" + (s.trial ? " on" : "");
+    $("btn-trial").disabled = !!s.trial;
+
+    var conn = $("conn"), ctext, ccls = "";
+    if (s.status === "error") { ctext = "J-Link error"; ccls = "bad"; }
+    else if (s.status === "replay") { ctext = "replaying a log"; ccls = "warn"; }
+    else if (s.status === "replay-done") { ctext = "replay finished"; }
+    else if (!stale) { ctext = "SWO live"; ccls = "good"; }
+    else if (s.status === "attached") { ctext = "J-Link attached, SWO silent"; ccls = "warn"; }
+    else { ctext = "connecting…"; }
+    conn.className = "badge" + (ccls ? " " + ccls : ""); conn.textContent = ctext;
+  }
+
+  function renderStats() {
+    var t = s.tally;
+    setText("t-total", t.total); setText("t-hit", t.hit); setText("t-wrong", t.wrong);
+    setText("t-miss", t.miss); setText("t-events", t.events);
+    setText("t-rate", t.total ? t.hit + " of " + t.total + " attempts" : "—");
+    var last = s.lastInf || s.lastLive;
+    if (last) {
+      setText("s-pred", last.pred);
+      setText("s-pred-age", clock(last.t * 1000));
+      setText("s-score", Number(last.score).toFixed(3));
+    }
+    var l = s.lastLive;
+    if (l && l.invoke_us !== undefined) setValueUnit("s-us", (l.invoke_us / 1000).toFixed(2), "ms");
+    if (l && l.invoke_cycles !== undefined) setText("s-cycles", num(l.invoke_cycles) + " cycles · DWT, this firmware");
+    var f = s.lastFrame;
+    if (f) {
+      setText("s-peak", f.peak);
+      setText("s-dc", "dc=" + f.dc + " · hop " + f.frame);
+      setText("s-err", f.overruns + " / " + f.dma_faults);
+      if (f.slot !== undefined) setText("b-slot", "word " + f.slot + (Number(f.slot_changes) ? " (moved ×" + f.slot_changes + ")" : ""));
+      $("mic-settle").hidden = Number(f.muted) !== 1;
+      $("slot-warn").hidden = !Number(f.slot_changes);
+      setText("slot-count", f.slot_changes || 0);
+    }
+    $("mic-warn").hidden = s.silentRun < SILENT_FRAMES && s.frozenRun < FROZEN_FRAMES;
+  }
+
+  function ms(cycles) { return s.cpuHz ? (cycles / s.cpuHz * 1000) : null; }
+  var drawnStage = null;
+  function renderAlwaysOn() {
+    var f = s.lastFrame;
+    if (f && f.awake !== undefined) {
+      setValueUnit("a-awake", Number(f.awake).toFixed(1), "%");
+      setText("a-sleep", s.sleep === 0 ? "sleep is disabled in this build" : "share of the last second");
+    }
+    var st = s.stage;
+    if (!st || st === drawnStage) return;
+    drawnStage = st;
+    var infPerSecond = 1000 / s.strideMs;
+    var rows = [
+      { label: "Frontend (per hop)", cycles: st.frontend_cycles, per: HOPS_PER_SECOND, color: "var(--accent)" },
+      { label: "log + DCT (per inference)", cycles: st.mfcc_cycles, per: infPerSecond, color: "var(--accent-2)" },
+      { label: "Quantize (per inference)", cycles: st.quantize_cycles, per: infPerSecond, color: "var(--accent-4)" },
+      { label: "Invoke (per inference)", cycles: st.invoke_cycles, per: infPerSecond, color: "var(--accent-3)" }
+    ];
+    var total = 0;
+    rows.forEach(function (r) { r.perSecond = r.cycles * r.per; total += r.perSecond; });
+    var hopMs = ms(st.frontend_cycles), infMs = ms(st.mfcc_cycles + st.quantize_cycles + st.invoke_cycles);
+    if (hopMs !== null) { setValueUnit("a-hop", hopMs.toFixed(2), "ms"); setValueUnit("a-inf", infMs.toFixed(2), "ms"); setValueUnit("a-sum", (total / s.cpuHz * 100).toFixed(1), "%"); }
+    else { setText("a-hop", num(st.frontend_cycles)); setText("a-inf", num(st.mfcc_cycles + st.quantize_cycles + st.invoke_cycles)); }
+    var box = $("stage-bars"); box.innerHTML = "";
+    var max = Math.max.apply(null, rows.map(function (r) { return r.perSecond; }).concat([1]));
+    rows.forEach(function (r) {
+      var row = document.createElement("div"); row.className = "bar-row";
+      var lab = document.createElement("div"); lab.className = "bar-label"; lab.textContent = r.label;
+      var track = document.createElement("div"); track.className = "bar-track";
+      var fill = document.createElement("div"); fill.className = "bar-fill";
+      fill.style.width = Math.max(0.5, r.perSecond / max * 100) + "%"; fill.style.background = r.color;
+      track.appendChild(fill);
+      var val = document.createElement("div"); val.className = "bar-value tnum";
+      var one = ms(r.cycles);
+      val.textContent = (one !== null ? one.toFixed(2) + " ms × " + r.per : num(r.cycles) + " × " + r.per);
+      row.title = num(r.cycles) + " cycles each, " + num(Math.round(r.perSecond)) + " cycles per second";
+      row.appendChild(lab); row.appendChild(track); row.appendChild(val); box.appendChild(row);
+    });
+  }
+
+  function bars(container, points, heightOf, classOf, tipOf) {
+    Array.prototype.slice.call(container.querySelectorAll(".tl-bar, .empty")).forEach(function (n) { n.remove(); });
+    if (!points.length) { var e = document.createElement("div"); e.className = "empty"; e.textContent = "no data yet"; container.appendChild(e); return; }
+    points.forEach(function (p) {
+      var b = document.createElement("div");
+      b.className = "tl-bar " + classOf(p);
+      b.style.height = Math.max(2, heightOf(p) * 100) + "%";
+      b.tabIndex = 0;
+      var show = function (e) { tip(e, tipOf(p)); };
+      b.addEventListener("pointerenter", show); b.addEventListener("pointermove", show);
+      b.addEventListener("pointerleave", hideTip); b.addEventListener("focus", show); b.addEventListener("blur", hideTip);
+      container.appendChild(b);
+    });
+  }
+  var drawnScore = "", drawnPeak = -1;
+  function renderCharts() {
+    // Per-inference lines when the firmware prints them, else the 1 Hz line.
+    var perInf = s.inf.length > 0, pts = perInf ? s.inf : s.live;
+    var last = pts.length ? pts[pts.length - 1] : null;
+    var key = last ? last.t + ":" + pts.length + ":" + (last.fired ? 1 : 0) : "";
+    if (key !== drawnScore) {
+      drawnScore = key;
+      setText("tl-sub", (perInf ? "One bar per inference, last " + Math.round(MAX_INF * s.strideMs / 1000) + " s" : "One bar per second (the firmware prints no per-inference lines)") + ". Newest on the right; hover a bar for the word and score.");
+      bars($("tl-score"), pts,
+        function (p) { return Math.min(1, Math.max(0, Number(p.score))); },
+        function (p) { return p.fired === true || Number(p.fired) === 1 ? "fired" : (isKeyword(p.pred) && Number(p.score) >= THRESHOLD ? "hot" : ""); },
+        function (p) { return clock(p.t * 1000) + "  " + p.pred + "  " + Number(p.score).toFixed(3); });
+    }
+    var lastPeak = s.peaks.length ? s.peaks[s.peaks.length - 1].t : 0;
+    if (lastPeak !== drawnPeak) {
+      drawnPeak = lastPeak;
+      var max = Math.max.apply(null, s.peaks.map(function (p) { return Number(p.peak); }).concat([1]));
+      bars($("tl-peak"), s.peaks,
+        function (p) { return Number(p.peak) / max; },
+        function (p) { return Number(p.peak) > 0 ? "hot" : ""; },
+        function (p) { return clock(p.t * 1000) + "  peak=" + p.peak + "  dc=" + p.dc; });
+    }
+  }
+
+  var drawnLog = null, drawnRaw = 0;
+  function renderLog() {
+    if (s.log[0] !== drawnLog) {
+      drawnLog = s.log[0];
+      var body = $("log"); body.innerHTML = "";
+      if (!s.log.length) { var tr0 = body.insertRow(); var td0 = tr0.insertCell(); td0.colSpan = 5; td0.textContent = "nothing yet"; }
+      s.log.forEach(function (r) {
+        var tr = body.insertRow(), o = OUTCOME[r.outcome] || OUTCOME.other;
+        tr.insertCell().textContent = clock(r.t);
+        tr.insertCell().textContent = r.kind;
+        var lab = tr.insertCell(); lab.className = "label"; lab.textContent = r.label;
+        tr.insertCell().textContent = r.score === null || r.score === undefined ? "—" : Number(r.score).toFixed(3);
+        var tag = document.createElement("span"); tag.className = "tag " + o[0]; tag.textContent = o[1];
+        tr.insertCell().appendChild(tag);
+      });
+    }
+    if ($("raw").parentNode.open && s.raw.length && s.raw[s.raw.length - 1] !== drawnRaw) {
+      drawnRaw = s.raw[s.raw.length - 1];
+      var pre = $("raw"); pre.textContent = s.raw.join("\n"); pre.scrollTop = pre.scrollHeight;
+    }
+  }
+
+  function render() { var now = Date.now(); renderVerdict(now); renderStats(); renderAlwaysOn(); renderCharts(); renderLog(); }
+
+  // ---------- tooltip ----------
+  function tip(e, textValue) {
+    var t = $("tooltip"); t.textContent = textValue; t.classList.add("show");
+    var x = e.clientX, y = e.clientY;
+    if (x === undefined) { var r = e.target.getBoundingClientRect(); x = r.left; y = r.top; }
+    t.style.left = Math.min(Math.max(8, x + 12), window.innerWidth - t.offsetWidth - 8) + "px";
+    t.style.top = Math.max(8, y - 36) + "px";
+  }
+  function hideTip() { $("tooltip").classList.remove("show"); }
+
+  // ---------- boot ----------
+  setText("win-s", TRIAL_MS / 1000);
+  setText("thr-text", THRESHOLD.toFixed(2));
+  setText("thr-label", "threshold " + THRESHOLD.toFixed(2));
+  $("thr-line").style.bottom = THRESHOLD * 100 + "%";
+  renderWords();
+
+  var source = new EventSource("/events");
+  // The server resends its backlog on every (re)connect: drop what it will repeat.
+  source.onopen = function () {
+    s.inf = []; s.live = []; s.peaks = []; s.raw = []; s.silentRun = 0; s.frozenRun = 0;
+    s.lastFrame = null; s.tally.events = 0;
+    s.log = s.log.filter(function (r) { return r.attempt; });
+    drawnScore = ""; drawnPeak = -1; drawnLog = null; drawnStage = null;
+  };
+  source.onmessage = function (e) { try { onMessage(JSON.parse(e.data)); } catch (err) { /* malformed line */ } };
+  source.onerror = function () { s.status = "error"; s.detail = "host/kws_dashboard.py is not answering — restart it"; };
+  setInterval(render, 200);
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Build tool for the firmware (provides the `nsx` command). Tested version.
+neuralspotx==0.7.17

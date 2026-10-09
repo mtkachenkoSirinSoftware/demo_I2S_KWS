@@ -1,0 +1,28 @@
+# Model identity
+
+Do not edit scales by hand. A class-B model replaces this file via
+`tools/embed_model.py` and a new `kws_model_contract.h`.
+See [`bring_your_model.md`](../bring_your_model.md).
+
+```
+file:     depgraph_r060_kd_int8.tflite
+bytes:    18256
+sha256:   ae08012b5a5dd1fd59673bba3d4b1d1c43d7cd1f410537824d7eb6c2edb40fb7
+lineage:  DS-CNN, DepGraph r=0.60, knowledge distillation, PTQ INT8
+
+input:    serving_default_input_1:0   [1, 49, 10, 1] int8
+          scale=0.5899888277053833  zero_point=81
+output:   StatefulPartitionedCall:0   [1, 12] int8
+          scale=0.20843878388404846 zero_point=42
+
+labels (tfds speech_commands — not classic MLPerf):
+  0 down  1 go  2 left  3 no  4 off  5 on
+  6 right 7 stop 8 up  9 yes 10 _silence_ 11 _unknown_
+  kws_infer uses MLPerf order (index 11 = go). Table: assets/LABELS.md
+
+frontend (must match training):
+  16000 Hz, mono, int16, window = 16000 samples (1.000 s)
+  frame_length=480 (30 ms), hop=320 (20 ms), fft=512, |STFT|
+  40 mel, 20–4000 Hz, log(mel+1e-6), DCT-II, 10 mfcc
+  peak norm = signed max(x) over the same 1 s window
+```

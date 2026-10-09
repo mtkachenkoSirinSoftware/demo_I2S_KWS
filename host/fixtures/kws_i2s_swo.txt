@@ -1,0 +1,279 @@
+ws_i2s runtime=helia-rt arena_used=16820
+perf_mode=LOW cpu_hz=96000000
+i2s backend=hal fs=16000 bclk=1024000 slots=2x32 bits=24 shift=8 hpf=60 startup_hops=100
+gpio clk=47 ws=48 sdin=4
+model sha256=ae08012b5a5dd1fd59673bba3d4b1d1c43d7cd1f410537824d7eb6c2edb40fb7
+always_on sleep=1 infer_lines=1 rtt_pcm=0 stride_ms=100
+pred is the live I2S microphone, not a flash/UART clip
+inf pred=up score=0.266
+Frame 50  peak=0 dc=0 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=1 awake=7.2
+stage frontend_cycles=91691 mfcc_cycles=684811 quantize_cycles=10881 invoke_cycles=996414
+live pred=up score=0.266 fired=0 invoke_cycles=996414 invoke_us=10379
+inf pred=up score=0.266
+inf pred=up score=0.266
+inf pred=up score=0.266
+inf pred=up score=0.266
+inf pred=up score=0.266
+inf pred=up score=0.266
+inf pred=up score=0.266
+inf pred=up score=0.266
+inf pred=up score=0.266
+inf pred=up score=0.266
+Frame 100  peak=0 dc=0 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=1 awake=23.8
+stage frontend_cycles=91691 mfcc_cycles=684324 quantize_cycles=10808 invoke_cycles=990190
+live pred=up score=0.266 fired=0 invoke_cycles=990190 invoke_us=10314
+inf pred=off score=0.237
+inf pred=down score=0.447
+inf pred=down score=0.352
+inf pred=down score=0.575
+inf pred=down score=0.306
+inf pred=down score=0.654
+inf pred=down score=0.442
+inf pred=down score=0.584
+inf pred=down score=0.403
+inf pred=_unknown_ score=0.208
+Frame 150  peak=30 dc=4 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990244
+live pred=_unknown_ score=0.208 fired=0 invoke_cycles=990244 invoke_us=10315
+inf pred=up score=0.206
+inf pred=_unknown_ score=0.259
+inf pred=up score=0.200
+inf pred=up score=0.200
+inf pred=_unknown_ score=0.184
+inf pred=up score=0.198
+inf pred=up score=0.200
+inf pred=up score=0.204
+inf pred=up score=0.204
+inf pred=up score=0.196
+Frame 200  peak=28 dc=-1 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990241
+live pred=up score=0.196 fired=0 invoke_cycles=990241 invoke_us=10315
+inf pred=up score=0.220
+inf pred=up score=0.214
+inf pred=up score=0.227
+inf pred=up score=0.233
+inf pred=up score=0.280
+inf pred=up score=0.210
+inf pred=up score=0.200
+inf pred=up score=0.206
+inf pred=_unknown_ score=0.208
+inf pred=up score=0.225
+Frame 250  peak=34 dc=3 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990201
+live pred=up score=0.225 fired=0 invoke_cycles=990201 invoke_us=10314
+inf pred=up score=0.241
+inf pred=up score=0.173
+inf pred=up score=0.259
+inf pred=_unknown_ score=0.206
+inf pred=up score=0.193
+inf pred=up score=0.245
+inf pred=up score=0.211
+inf pred=up score=0.165
+inf pred=up score=0.207
+inf pred=_unknown_ score=0.248
+Frame 300  peak=56 dc=-2 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990354
+live pred=_unknown_ score=0.248 fired=0 invoke_cycles=990354 invoke_us=10316
+inf pred=up score=0.186
+inf pred=_unknown_ score=0.213
+inf pred=up score=0.209
+inf pred=up score=0.199
+inf pred=up score=0.203
+inf pred=_unknown_ score=0.212
+inf pred=_unknown_ score=0.260
+inf pred=up score=0.235
+inf pred=up score=0.201
+inf pred=up score=0.228
+Frame 350  peak=33 dc=-1 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990275
+live pred=up score=0.228 fired=0 invoke_cycles=990275 invoke_us=10315
+inf pred=up score=0.166
+inf pred=up score=0.308
+inf pred=up score=0.240
+inf pred=up score=0.235
+inf pred=up score=0.304
+inf pred=_silence_ score=0.315
+inf pred=up score=0.308
+inf pred=left score=0.358
+inf pred=stop score=0.362
+inf pred=stop score=0.404
+Frame 400  peak=198 dc=0 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990171
+live pred=stop score=0.404 fired=0 invoke_cycles=990171 invoke_us=10314inf pred=stop score=0.347
+inf pred=_unknown_ score=0.426
+inf pred=stop score=0.446
+inf pred=_unknown_ score=0.485
+inf pred=stop score=0.392
+inf pred=_unknown_ score=0.473
+inf pred=up score=0.177
+inf pred=up score=0.226
+inf pred=_unknown_ score=0.216
+inf pred=_unknown_ score=0.210
+Frame 450  peak=63 dc=-5 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990322
+live pred=_unknown_ score=0.210 fired=0 invoke_cycles=990322 invoke_us=10315
+inf pred=_unknown_ score=0.193
+inf pred=_unknown_ score=0.186
+inf pred=_silence_ score=0.318
+inf pred=_silence_ score=0.319
+inf pred=_silence_ score=0.323
+inf pred=_unknown_ score=0.232
+inf pred=_silence_ score=0.292
+inf pred=_silence_ score=0.237
+inf pred=_silence_ score=0.526
+inf pred=off score=0.254
+Frame 500  peak=44 dc=0 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.8
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990376
+live pred=off score=0.254 fired=0 invoke_cycles=990376 invoke_us=10316
+inf pred=_silence_ score=0.171
+inf pred=up score=0.443
+inf pred=up score=0.247
+inf pred=up score=0.312
+inf pred=stop score=0.183
+inf pred=_silence_ score=0.359
+inf pred=left score=0.352
+inf pred=_silence_ score=0.443
+inf pred=_silence_ score=0.545
+inf pred=_silence_ score=0.669
+Frame 550  peak=101 dc=0 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990282
+live pred=_silence_ score=0.669 fired=0 invoke_cycles=990282 invoke_us=10315
+inf pred=_silence_ score=0.585
+inf pred=_silence_ score=0.196
+inf pred=up score=0.238
+inf pred=up score=0.209
+inf pred=up score=0.412
+inf pred=_unknown_ score=0.201
+inf pred=up score=0.277
+inf pred=up score=0.236
+inf pred=go score=0.199
+inf pred=up score=0.293
+Frame 600  peak=33 dc=-2 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990211
+live pred=up score=0.293 fired=0 invoke_cycles=990211 invoke_us=10314
+inf pred=up score=0.271
+inf pred=go score=0.232
+inf pred=up score=0.304
+inf pred=up score=0.265
+inf pred=up score=0.226
+inf pred=up score=0.192
+inf pred=_unknown_ score=0.249
+inf pred=_silence_ score=0.502
+inf pred=_silence_ score=0.320
+inf pred=_silence_ score=0.405
+Frame 650  peak=22 dc=-1 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990316
+live pred=_silence_ score=0.405 fired=0 invoke_cycles=990316 invoke_us=10315
+inf pred=_silence_ score=0.587
+inf pred=_silence_ score=0.507
+inf pred=_silence_ score=0.594
+inf pred=_silence_ score=0.301
+inf pred=_silence_ score=0.447
+inf pred=_silence_ score=0.657
+inf pred=_silence_ score=0.466
+inf pred=_silence_ score=0.431
+inf pred=_silence_ score=0.394
+inf pred=_silence_ score=0.726
+Frame 700  peak=46 dc=9 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.8
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990283
+live pred=_silence_ score=0.726 fired=0 invoke_cycles=990283 invoke_us=10315
+inf pred=_silence_ score=0.679
+inf pred=_silence_ score=0.706
+inf pred=_silence_ score=0.569
+inf pred=_silence_ score=0.712
+inf pred=_silence_ score=0.474
+inf pred=_silence_ score=0.592
+inf pred=up score=0.183
+inf pred=_silence_ score=0.264
+inf pred=_unknown_ score=0.217
+inf pred=_unknown_ score=0.193
+Frame 750  peak=45 dc=-4 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.8
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990195
+live pred=_unknown_ score=0.193 fired=0 invoke_cycles=990195 invoke_us=10314
+inf pred=up score=0.174
+inf pred=_unknown_ score=0.239
+inf pred=up score=0.202
+inf pred=_unknown_ score=0.196
+inf pred=up score=0.205
+inf pred=_unknown_ score=0.292
+inf pred=up score=0.195
+inf pred=_unknown_ score=0.271
+inf pred=_unknown_ score=0.304
+inf pred=_unknown_ score=0.378
+Frame 800  peak=23 dc=8 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.8
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990283
+live pred=_unknown_ score=0.378 fired=0 invoke_cycles=990283 invoke_us=10315
+inf pred=_unknown_ score=0.251
+inf pred=_unknown_ score=0.294
+inf pred=_silence_ score=0.277
+inf pred=_unknown_ score=0.329
+inf pred=_unknown_ score=0.451
+inf pred=_unknown_ score=0.227
+inf pred=_unknown_ score=0.260
+inf pred=_unknown_ score=0.349
+inf pred=_silence_ score=0.338
+inf pred=_silence_ score=0.711
+Frame 850  peak=34 dc=-10 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.8
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990232
+live pred=_silence_ score=0.711 fired=0 invoke_cycles=990232 invoke_us=10314
+inf pred=_silence_ score=0.715
+inf pred=_silence_ score=0.730
+inf pred=_silence_ score=0.695
+inf pred=_silence_ score=0.836
+inf pred=_silence_ score=0.646
+inf pred=_silence_ score=0.707
+inf pred=_silence_ score=0.393
+inf pred=_silence_ score=0.229
+inf pred=_unknown_ score=0.253
+inf pred=_unknown_ score=0.224
+Frame 900  peak=48 dc=-11 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.8
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990349
+live pred=_unknown_ score=0.224 fired=0 invoke_cycles=990349 invoke_us=10316
+inf pred=up score=0.214
+inf pred=_unknown_ score=0.223
+inf pred=up score=0.198
+inf pred=_unknown_ score=0.252
+inf pred=up score=0.240
+inf pred=_unknown_ score=0.219
+inf pred=up score=0.251
+inf pred=_unknown_ score=0.218
+inf pred=up score=0.224
+inf pred=up score=0.198
+Frame 950  peak=67 dc=-38 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990210
+live pred=up score=0.198 fired=0 invoke_cycles=990210 invoke_us=10314
+inf pred=up score=0.206
+inf pred=up score=0.220
+inf pred=_unknown_ score=0.198
+inf pred=up score=0.172
+inf pred=_unknown_ score=0.218
+inf pred=up score=0.200
+inf pred=_unknown_ score=0.221
+inf pred=up score=0.187
+inf pred=_unknown_ score=0.199
+inf pred=_unknown_ score=0.197
+Frame 1000  peak=31 dc=2 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.7
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990185
+live pred=_unknown_ score=0.197 fired=0 invoke_cycles=990185 invoke_us=10314
+inf pred=_unknown_ score=0.208
+inf pred=_unknown_ score=0.221
+inf pred=_unknown_ score=0.217
+inf pred=up score=0.221
+inf pred=_unknown_ score=0.214
+inf pred=_unknown_ score=0.240
+inf pred=up score=0.180
+inf pred=_unknown_ score=0.219
+inf pred=_unknown_ score=0.221
+inf pred=_unknown_ score=0.248
+Frame 1050  peak=24 dc=-5 overruns=0 dma_faults=0 slot=0 slot_changes=0 muted=0 awake=25.8
+stage frontend_cycles=117817 mfcc_cycles=684336 quantize_cycles=10808 invoke_cycles=990226
+live pred=_unknown_ score=0.248 fired=0 invoke_cycles=990226 invoke_us=10314
+inf pred=_unknown_ score=0.220
+inf pred=_unknown_ score=0.245
+inf pred=_unknown_ score=0.234
+inf pred=up score=0.204
+inf pred=up score=0.202
+inf pred=up score=0.245
+inf pred=up score=0.221
+inf pred=up score=0.193
+inf pred=up score=0.262
